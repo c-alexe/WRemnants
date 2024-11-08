@@ -230,13 +230,13 @@ int main(int argc, char* argv[]) {
       TH1D* h_e_vals_prevfit_in = (TH1D*)ffit->Get("h_e_vals_prevfit");
       TH1D* h_M_vals_prevfit_in = (TH1D*)ffit->Get("h_M_vals_prevfit");
       for(unsigned int i=0; i<n_eta_bins; i++){
-	    A_vals_fit(i) = -h_A_vals_prevfit_in->GetBinContent(i+1);
-	    e_vals_fit(i) = -h_e_vals_prevfit_in->GetBinContent(i+1);
-	    M_vals_fit(i) = -h_M_vals_prevfit_in->GetBinContent(i+1);
+	    A_vals_fit(i) = h_A_vals_prevfit_in->GetBinContent(i+1);
+	    e_vals_fit(i) = h_e_vals_prevfit_in->GetBinContent(i+1);
+	    M_vals_fit(i) = h_M_vals_prevfit_in->GetBinContent(i+1);
       }
-      h_A_vals_prevfit->Add(h_A_vals_prevfit_in, -1.0);
-      h_e_vals_prevfit->Add(h_e_vals_prevfit_in, -1.0);
-      h_M_vals_prevfit->Add(h_M_vals_prevfit_in, -1.0);
+      h_A_vals_prevfit->Add(h_A_vals_prevfit_in, 1.0);
+      h_e_vals_prevfit->Add(h_e_vals_prevfit_in, 1.0);
+      h_M_vals_prevfit->Add(h_M_vals_prevfit_in, 1.0);
       ffit->Close();
     }
     else {
@@ -451,9 +451,9 @@ int main(int argc, char* argv[]) {
 	      }
 
 	      if(ietaP<n_eta_bins && ietaM<n_eta_bins) {
-	        scale_smear0P = (1. + A_vals_fit(ietaP) + e_vals_fit(ietaP)*kmuP - M_vals_fit(ietaP)/kmuP);
-	        scale_smear0M = (1. + A_vals_fit(ietaM) + e_vals_fit(ietaM)*kmuM + M_vals_fit(ietaM)/kmuM);
-	        //cout << "smear0:" << scale_smear0P << ": " << 1 << " + " << A_vals_fit(ietaP) << " + " << e_vals_fit(ietaP)*kmuP << " - " << M_vals_fit(ietaP)/kmuP << endl;
+	        scale_smear0P = (1. + A_vals_fit(ietaP) - e_vals_fit(ietaP)*kmuP + M_vals_fit(ietaP)/kmuP);
+	        scale_smear0M = (1. + A_vals_fit(ietaM) - e_vals_fit(ietaM)*kmuM - M_vals_fit(ietaM)/kmuM);
+	        //cout << "smear0:" << scale_smear0P << ": " << 1 << " + " << A_vals_fit(ietaP) << " - " << e_vals_fit(ietaP)*kmuP << " + " << M_vals_fit(ietaP)/kmuP << endl;
 	        if(usePrevResolFit) {
 	          resol_smear0P = TMath::Sqrt( TMath::Max( 1.0 + c_vals_fit(ietaP) + d_vals_fit(ietaP)*kmuP, 0.0)  ) - 1.0;
 	          resol_smear0M = TMath::Sqrt( TMath::Max( 1.0 + c_vals_fit(ietaM) + d_vals_fit(ietaM)*kmuM, 0.0)  ) - 1.0;

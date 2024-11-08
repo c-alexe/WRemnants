@@ -197,17 +197,17 @@ public:
 	
       for(unsigned int i=0; i<n_eta_bins_; i++) {
 	      A_vals_(i) = -h_A_vals->GetBinContent(i+1);
-	      A_vals_prevfit_(i) = -h_A_vals_prevfit->GetBinContent(i+1);
+	      A_vals_prevfit_(i) = h_A_vals_prevfit->GetBinContent(i+1);
 	      x_vals_(i) = A_vals_(i);
       }
       for(unsigned int i=0; i<n_eta_bins_; i++) {
 	      e_vals_(i) = -h_e_vals->GetBinContent(i+1);
-	      e_vals_prevfit_(i) = -h_e_vals_prevfit->GetBinContent(i+1);
+	      e_vals_prevfit_(i) = h_e_vals_prevfit->GetBinContent(i+1);
 	      x_vals_(i+n_eta_bins_) = e_vals_(i);
       }
       for(unsigned int i=0; i<n_eta_bins_; i++) {
 	      M_vals_(i) = -h_M_vals->GetBinContent(i+1);
-	      M_vals_prevfit_(i) = -h_M_vals_prevfit->GetBinContent(i+1);
+	      M_vals_prevfit_(i) = h_M_vals_prevfit->GetBinContent(i+1);
 	      x_vals_(i+2*n_eta_bins_) = M_vals_(i);
       }
       fin->Close();
@@ -330,7 +330,8 @@ void TheoryFcn::generate_data() {
 	        while(ierr2<=0.) 
 	          ierr2 = ran_->Gaus(ierr2_nom,  ierr2_nom*0.1);
 	        
-          // Draw scale^2 centered around iscale2_bias with width ierr2	  
+          // Draw scale^2 centered around iscale2_bias with width ierr2
+          // Note: the model is correct as we read - _nom histos  
 	        double iscale2_bias =
 	          (1.0 + A_vals_(ieta_p) + e_vals_(ieta_p)*k_p - M_vals_(ieta_p)/k_p)*
 	          (1.0 + A_vals_(ieta_m) + e_vals_(ieta_m)*k_m + M_vals_(ieta_m)/k_m);
@@ -364,14 +365,14 @@ double TheoryFcn::operator()(const vector<double>& par) const {
     double M_p = par[ieta_p+2*n_eta_bins_]; 
     for(unsigned int ipt_p = 0; ipt_p < n_pt_bins_; ipt_p++) {   
       double k_p = kmean_vals_[ipt_p];
-      double p_term = (1.0 + A_p + e_p*(k_p-kmean_val_)/kmean_val_ - M_p/k_p*kmean_val_ );
+      double p_term = (1.0 + A_p - e_p*(k_p-kmean_val_)/kmean_val_ + M_p/k_p*kmean_val_ );
       for(unsigned int ieta_m = 0; ieta_m < n_eta_bins_; ieta_m++) {
 	      double A_m = par[ieta_m];
 	      double e_m = par[ieta_m+n_eta_bins_];
 	      double M_m = par[ieta_m+2*n_eta_bins_];
 	      for(unsigned int ipt_m = 0; ipt_m < n_pt_bins_; ipt_m++) {	  
 	        double k_m = kmean_vals_[ipt_m];
-	        double m_term = (1.0 + A_m + e_m*(k_m-kmean_val_)/kmean_val_ + M_m/k_m*kmean_val_);
+	        double m_term = (1.0 + A_m - e_m*(k_m-kmean_val_)/kmean_val_ - M_m/k_m*kmean_val_);
 	        double ival = (scales2_[ibin] - p_term*m_term)/scales2Err_[ibin];
 	        double ival2 = ival*ival;
 	        if(masks_[ibin])
@@ -410,11 +411,11 @@ vector<double> TheoryFcn::Gradient(const vector<double> &par ) const {
 	      double k_p = kmean_vals_[ipt_p];
 	      double p_term = 0.;
 	      if(ieta_p != ieta)
-          p_term = (1.0 + A_p + e_p*(k_p-kmean_val_)/kmean_val_ - M_p/k_p*kmean_val_);
+          p_term = (1.0 + A_p - e_p*(k_p-kmean_val_)/kmean_val_ + M_p/k_p*kmean_val_);
 	      else {
 	        if(par_type==0)       p_term = 1.0;
-	        else if( par_type==1) p_term = (k_p-kmean_val_)/kmean_val_;
-	        else                  p_term = -1./k_p*kmean_val_;
+	        else if( par_type==1) p_term = -(k_p-kmean_val_)/kmean_val_;
+	        else                  p_term = 1./k_p*kmean_val_;
 	      }
 	      for(unsigned int ieta_m = 0; ieta_m < n_eta_bins_; ieta_m++) {
 	        double A_m = par[ieta_m];
@@ -424,15 +425,15 @@ vector<double> TheoryFcn::Gradient(const vector<double> &par ) const {
 	          double k_m = kmean_vals_[ipt_m];
 	          double m_term = 0.;
 	          if(ieta_m != ieta)
-              m_term = (1.0 + A_m + e_m*(k_m-kmean_val_)/kmean_val_ + M_m/k_m*kmean_val_);
+              m_term = (1.0 + A_m - e_m*(k_m-kmean_val_)/kmean_val_ - M_m/k_m*kmean_val_);
 	          else {
 	            if(par_type==0)       m_term = 1.0;
-	            else if( par_type==1) m_term = (k_m-kmean_val_)/kmean_val_;
-	            else                  m_term = +1./k_m*kmean_val_;
+	            else if( par_type==1) m_term = -(k_m-kmean_val_)/kmean_val_;
+	            else                  m_term = -1./k_m*kmean_val_;
 	          }
 
-	          double ival = -2*(scales2_[ibin] - (1.0 + A_p + e_p*(k_p-kmean_val_)/kmean_val_ - M_p/k_p*kmean_val_)*
-			        (1.0 + A_m + e_m*(k_m-kmean_val_)/kmean_val_ + M_m/k_m*kmean_val_))
+	          double ival = -2*(scales2_[ibin] - (1.0 + A_p - e_p*(k_p-kmean_val_)/kmean_val_ + M_p/k_p*kmean_val_)*
+			        (1.0 + A_m - e_m*(k_m-kmean_val_)/kmean_val_ - M_m/k_m*kmean_val_))
 	            /scales2Err_[ibin]/scales2Err_[ibin];
 
 	          double term = 0.0;
@@ -440,14 +441,14 @@ vector<double> TheoryFcn::Gradient(const vector<double> &par ) const {
 	            if(ieta_p!=ieta_m) term = p_term*m_term;
 	            else {
 		            if(par_type==0)
-		              term = 1.0*(1.0 + A_m + e_m*(k_m-kmean_val_)/kmean_val_ + M_m/k_m*kmean_val_) +
-		                (1.0 + A_p + e_p*(k_p-kmean_val_)/kmean_val_ - M_p/k_p*kmean_val_)*1.0;
+		              term = 1.0*(1.0 + A_m - e_m*(k_m-kmean_val_)/kmean_val_ - M_m/k_m*kmean_val_) +
+		                (1.0 + A_p - e_p*(k_p-kmean_val_)/kmean_val_ + M_p/k_p*kmean_val_)*1.0;
 		            else if(par_type==1)
-		              term = (k_p-kmean_val_)/kmean_val_ * (1.0 + A_m + e_m*(k_m-kmean_val_)/kmean_val_ + M_m/k_m*kmean_val_) +
-		                (1.0 + A_p + e_p*(k_p-kmean_val_)/kmean_val_ - M_p/k_p*kmean_val_) * (k_m-kmean_val_)/kmean_val_;
+		              term = -(k_p-kmean_val_)/kmean_val_ * (1.0 + A_m - e_m*(k_m-kmean_val_)/kmean_val_ - M_m/k_m*kmean_val_) -
+		                (1.0 + A_p - e_p*(k_p-kmean_val_)/kmean_val_ + M_p/k_p*kmean_val_) * (k_m-kmean_val_)/kmean_val_;
 		            else
-		              term = -1.0/k_p*kmean_val_ * (1.0 + A_m + e_m*(k_m-kmean_val_)/kmean_val_ + M_m/k_m*kmean_val_) +
-		                (1.0 + A_p + e_p*(k_p-kmean_val_)/kmean_val_ - M_p/k_p*kmean_val_) * 1.0/k_m*kmean_val_;
+		              term = 1.0/k_p*kmean_val_ * (1.0 + A_m - e_m*(k_m-kmean_val_)/kmean_val_ - M_m/k_m*kmean_val_) -
+		                (1.0 + A_p - e_p*(k_p-kmean_val_)/kmean_val_ + M_p/k_p*kmean_val_) * 1.0/k_m*kmean_val_;
 	            }
 	          }
 	          //cout << "ival " << ival << "," << term << endl; 
