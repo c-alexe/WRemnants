@@ -49,6 +49,7 @@ scale_tensor_axes = (axis_muRfact, axis_muFfact)
 pdfMap = {
     "nnpdf31": {
         "name": "pdfNNPDF31",
+        "lha_name": "NNPDF31_nnlo_hessian_pdfas",
         "branch": "LHEPdfWeight",
         "combine": "symHessian",
         "entries": 101,
@@ -58,6 +59,7 @@ pdfMap = {
     },
     "ct18": {
         "name": "pdfCT18",
+        "lha_name": "CT18NNLO",
         "branch": "LHEPdfWeightAltSet11",
         "combine": "asymHessian",
         "entries": 59,
@@ -72,6 +74,7 @@ pdfMap = {
     },
     "nnpdf30": {
         "name": "pdfNNPDF30",
+        "lha_name": "NNPDF30_nnlo_as_0118_hessian",
         "branch": "LHEPdfWeightAltSet7",
         "combine": "symHessian",
         "entries": 101,
@@ -85,6 +88,7 @@ pdfMap = {
     },
     "nnpdf40": {
         "name": "pdfNNPDF40",
+        "lha_name": "NNPDF40_nnlo_hessian_pdfas",
         "branch": "LHEPdfWeightAltSet3",
         "combine": "symHessian",
         "entries": 51,
@@ -98,6 +102,7 @@ pdfMap = {
     },
     "pdf4lhc21": {
         "name": "pdfPDF4LHC21",
+        "lha_name": "PDF4LHC21_40_pdfas",
         "branch": "LHEPdfWeightAltSet10",
         "combine": "symHessian",
         "entries": 41,
@@ -111,6 +116,7 @@ pdfMap = {
     },
     "msht20": {
         "name": "pdfMSHT20",
+        "lha_name": "MSHT20nnlo_as118",
         "branch": "LHEPdfWeightAltSet12",
         "combine": "asymHessian",
         "entries": 65,
@@ -124,6 +130,7 @@ pdfMap = {
     },
     "msht20mcrange": {
         "name": "pdfMSHT20mcrange",
+        "lha_name": "MSHT20nnlo_mcrange_nf5",
         "branch": "LHEPdfWeightAltSet12",
         "combine": "asymHessian",
         "entries": 9,
@@ -131,6 +138,7 @@ pdfMap = {
     },
     "msht20mbrange": {
         "name": "pdfMSHT20mbrange",
+        "lha_name": "MSHT20nnlo_mbrange_nf5",
         "branch": "LHEPdfWeightAltSet12",
         "combine": "asymHessian",
         "entries": 7,
@@ -138,6 +146,7 @@ pdfMap = {
     },
     "msht20mcrange_renorm": {
         "name": "pdfMSHT20mcrange",
+        "lha_name": "MSHT20nnlo_mcrange_nf5",
         "branch": "LHEPdfWeightAltSet12",
         "combine": "asymHessian",
         "entries": 9,
@@ -146,6 +155,7 @@ pdfMap = {
     },
     "msht20mbrange_renorm": {
         "name": "pdfMSHT20mbrange",
+        "lha_name": "MSHT20nnlo_mbrange_nf5",
         "branch": "LHEPdfWeightAltSet12",
         "combine": "asymHessian",
         "entries": 7,
@@ -154,6 +164,7 @@ pdfMap = {
     },
     "msht20an3lo": {
         "name": "pdfMSHT20an3lo",
+        "lha_name": "MSHT20an3lo_as118",
         "branch": "LHEPdfWeightAltSet24",
         "combine": "asymHessian",
         "entries": 105,
@@ -167,6 +178,7 @@ pdfMap = {
     },
     "ct18z": {
         "name": "pdfCT18Z",
+        "lha_name": "CT18ZNNLO",
         "branch": "LHEPdfWeightAltSet11",
         "combine": "asymHessian",
         "entries": 59,
@@ -182,6 +194,7 @@ pdfMap = {
     },
     "atlasWZj20": {
         "name": "pdfATLASWZJ20",
+        "lha_name": "ATLASepWZVjet20-EIG",
         "branch": "LHEPdfWeightAltSet19",
         "combine": "asymHessian",
         "entries": 60,
@@ -191,6 +204,7 @@ pdfMap = {
     },
     "herapdf20": {
         "name": "pdfHERAPDF20",
+        "lha_name": "HERAPDF20_NNLO_EIG",
         "branch": "LHEPdfWeightAltSet20",
         "combine": "asymHessian",
         "entries": 29,
@@ -204,6 +218,7 @@ pdfMap = {
     },
     "herapdf20ext": {
         "name": "pdfHERAPDF20ext",
+        "lha_name": "HERAPDF20_NNLO_VAR",
         "branch": "LHEPdfWeightAltSet21",
         "combine": "symHessian",
         "entries": 14,
