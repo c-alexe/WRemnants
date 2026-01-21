@@ -62,8 +62,33 @@ def postfit_eignvectors(cov_pdf):
     return V * np.sqrt(np.maximum(eigv, 0))
 
 
+# TODO: Integrate with rabbit to avoid code duplication
+def quadratic_symmetrization(matrix, labels):
+    symm_avg = 0.5 * (matrix.values[:, ::2] + matrix.values[:, 1::2])
+    symm_diff = 0.5 * np.sqrt(3) * (matrix.values[:, ::2] - matrix.values[:, 1::2])
+    avg_idx = np.char.find(labels, "Avg") != -1
+
+    if np.count_nonzero(avg_idx) != symm_avg.shape[1]:
+        raise ValueError(
+            "Found inconsistent number of Avg nuisances for quadratic symmetrization."
+        )
+
+    matrix.iloc[:, avg_idx] = symm_avg
+    matrix.iloc[:, ~avg_idx] = symm_diff
+
+    return matrix
+
+
+def apply_symmetrization(matrix, symm, labels):
+    if symm == "quadratic":
+        return quadratic_symmetrization(matrix, labels)
+
+
 def write_new_grids(base_name, outfolder, postfit_matrix, central_grid, pdf_scale):
-    new_pdf = os.path.basename(base_name) + f"_cmsmw_{pdf_scale:.1f}".replace(".", "p")
+    scale_label = (
+        "unscaled" if pdf_scale == 1 else f"uncx{pdf_scale:.1f}".replace(".", "p")
+    )
+    new_pdf = f"{os.path.basename(base_name)}_cmsmw_{scale_label}"
 
     outdir = os.path.join(outfolder, new_pdf)
     if not os.path.exists(outdir):
@@ -71,23 +96,30 @@ def write_new_grids(base_name, outfolder, postfit_matrix, central_grid, pdf_scal
         os.makedirs(outdir)
 
     inn = open(base_name + ".info", "r")
-    out = open("/".join([outdir, new_pdf]) + ".info", "w")
+    outbase = "/".join([outdir, new_pdf])
+    out = open(outbase + ".info", "w")
 
     for l in inn.readlines():
         if l.find("SetDesc:") >= 0:
             out.write(
                 f'SetDesc: "{pdf.pdf_name} modified by CMS mW postfit covariance, with prefit pdf unc scaled by {pdf_scale}"\n'
             )
+        elif l.find("NumMembers:") >= 0:
+            out.write(f"NumMembers: {nhess + 1}\n")
+        elif l.find("ErrorType") >= 0:
+            out.write(f"ErrorType: symmhessian\n")
         else:
             out.write(l)
     inn.close()
     out.close()
 
-    lh.write_replica(0, outdir, b"PdfType: 'central'\nFormat: lhagrid1\n", central_grid)
+    lh.write_replica(
+        0, outbase, b"PdfType: 'central'\nFormat: lhagrid1\n", central_grid
+    )
     for column in postfit_matrix.columns:
         header = b"PdfType: 'error'\nFormat: lhagrid1\n"
-        lh.write_replica(column + 1, outdir, header, postfit_matrix[column])
-    logger.info(f"Wrote PDF grids to {outdir}")
+        lh.write_replica(column + 1, outbase, header, postfit_matrix[column])
+    logger.info(f"Wrote PDF grids to {outbase}")
 
 
 Q = 100
@@ -119,7 +151,8 @@ else:
 
 pdf_name = theory_tools.pdfMap[pdf_input]["lha_name"]
 pdf_scale = input_meta["meta_info"]["args"]["scalePdf"]
-print("PDF scale from metadata:", pdf_scale)
+pdf_symm = input_meta["meta_info"]["args"]["symmetrizePdfUnc"]
+
 if pdf_scale == -1:
     pdf_scale = theory_tools.pdfMap[pdf_input][
         "inflationFactor"
@@ -168,6 +201,10 @@ headers, grids = lh.load_all_replicas(pdf, central_pdf_path)
 # Exclude alpha_s, central is excluded by default in the returned matrix
 # Big matrix is hessian_i-central, scale up by pdfScale
 matrix = lh.big_matrix(grids[: nhess + 1]) * pdf_scale
+
+if not symm_errors:
+    logger.info(f"Applying symmetrization {pdf_symm} to PDF uncertainties.")
+    matrix = apply_symmetrization(matrix, pdf_symm, labels)
 
 new_central = grids[0] + np.sum(pulls * matrix, axis=1)
 
